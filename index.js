@@ -1,7 +1,7 @@
 // CONFIGURATION IMPORTS
 import express from "express";
-import { PORT } from "./config/config.js";
-import connectDB from "./config/db.js";
+import { PORT } from "./src/config/config.js";
+import connectDB from "./src/config/db.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -10,7 +10,7 @@ import cookieParser from "cookie-parser";
 //
 
 // ROUTES IMPORTS
-import authRoutes from "./auth/auth.routes.js";
+import authRoutes from "./src/auth/auth.routes.js";
 
 //********************************************************************************* */
 
