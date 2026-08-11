@@ -42,6 +42,8 @@ const excludedFiles = new Set([
   ".env.development.local",
   ".env.test.local",
   ".env.production.local",
+  "package.json",
+  "package-lock.json",
 ]);
 
 function shouldExclude(name) {
