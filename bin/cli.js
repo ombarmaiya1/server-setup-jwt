@@ -42,8 +42,6 @@ const excludedFiles = new Set([
   ".env.development.local",
   ".env.test.local",
   ".env.production.local",
-  "package.json",
-  "package-lock.json",
   "node_modules",
   
 ]);
@@ -115,7 +113,7 @@ console.log(`Creating backend starter in ${targetDir}`);
 
 ensureTargetDirectoryIsReady(targetDir);
 copyTemplate(templateRoot, targetDir);
-cleanupGeneratedProject(targetDir);
+cleanupGeneratedProject(baseUserDir);
 
 console.log("");
 console.log("Backend starter created successfully.");
