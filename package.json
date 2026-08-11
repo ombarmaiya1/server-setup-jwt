@@ -1,6 +1,6 @@
 {
   "name": "server-with-jwt",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Basic express server",
   "homepage": "https://github.com/ombarmaiya1/server-setup-jwt#readme",
   "bugs": {
