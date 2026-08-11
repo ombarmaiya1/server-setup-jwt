@@ -16,7 +16,7 @@ const templateRoot = path.resolve(__dirname, "..");
 const baseUserDir = process.env.INIT_CWD || process.cwd();
 
 // Get optional project name parameter, or default to "backend"
-const projectName = process.argv[2] || "backend";
+const projectName = process.argv[2] || "server";
 
 // Resolve final path relative to the user's terminal location
 const targetDir = path.resolve(baseUserDir, projectName);
@@ -44,6 +44,8 @@ const excludedFiles = new Set([
   ".env.production.local",
   "package.json",
   "package-lock.json",
+  "node_modules",
+  
 ]);
 
 function shouldExclude(name) {
@@ -103,3 +105,17 @@ console.log("  cp .env.example .env    # if you add an example env file");
 console.log("  npm run dev");
 console.log("");
 console.log("Configure your MongoDB URI, JWT secret, and email credentials before running in production.");
+
+console.log("\nCleaning up scaffolding package...");
+
+const projectRoot = baseUserDir;
+const packageName = "server-with-jwt";
+
+try {
+  const nodeModulePath = path.join(projectRoot, "node_modules", packageName);
+  if (fs.existsSync(nodeModulePath)) {
+    fs.rmSync(nodeModulePath, { recursive: true, force: true });
+  }
+} catch (error) {
+  console.error("Cleanup failed:", error.message);
+}
