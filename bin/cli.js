@@ -90,10 +90,32 @@ function ensureTargetDirectoryIsReady(directory) {
   }
 }
 
+function cleanupGeneratedProject(directory) {
+  const filesToDelete = [
+    "node_modules",
+    "package.json",
+    "package-lock.json",
+  ];
+
+  for (const file of filesToDelete) {
+    const target = path.join(directory, file);
+
+    if (fs.existsSync(target)) {
+      fs.rmSync(target, {
+        recursive: true,
+        force: true,
+      });
+
+      console.log(`Deleted ${file}`);
+    }
+  }
+}
+
 console.log(`Creating backend starter in ${targetDir}`);
 
 ensureTargetDirectoryIsReady(targetDir);
 copyTemplate(templateRoot, targetDir);
+cleanupGeneratedProject(targetDir);
 
 console.log("");
 console.log("Backend starter created successfully.");
