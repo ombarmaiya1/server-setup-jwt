@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 
 // ROUTES IMPORTS
 import authRoutes from "./src/features/auth/auth.routes.js";
+import userRoutes from "./src/features/user/user.routes.js";
 
 //********************************************************************************* */
 
@@ -31,6 +32,7 @@ await connectDB();
 
 // ROUTES
 app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
 
 
 app.get("/", (req, res) => {
