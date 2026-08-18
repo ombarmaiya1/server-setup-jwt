@@ -1,7 +1,7 @@
-import User from "../user/user.model.js";
+import User from "./user.model.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import OTP from "../../features/auth/otp.model.js";
+import OTP from "../auth/otp.model.js";
 import SendOTPEmail from "../../services/email.service.js";
 
 
@@ -78,6 +78,8 @@ const updateUser = async (req, res, next) => {
       },
     });
   } catch (error) {
+    error.statusCode = 500;
+    error.message = "Error occurred while updating user information";
     next(error);
   }
 };
@@ -107,6 +109,8 @@ const sendPasswordChangeOTP = async (req, res, next) => {
       message: "OTP sent to your registered email address",
     });
   } catch (error) {
+    error.statusCode = 500;
+    error.message = "Error occurred while sending OTP";
     next(error);
   }
 };
@@ -157,6 +161,8 @@ const changePasswordWithOTP = async (req, res, next) => {
       message: "Password updated successfully",
     });
   } catch (error) {
+    error.statusCode = 500;
+    error.message = "Error occurred while changing password";
     next(error);
   }
 };
