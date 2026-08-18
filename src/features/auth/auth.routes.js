@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { RegisterUser, LoginUser , LogoutUser, SendOTP , VerifyOTP, ResetPassword
 } from './auth.controller.js';
-
-import { ValidateOTP } from '../middlewares/auth.middleware.js';
+import {ValidateOTP} from "../../middlewares/auth.middleware.js"
 const router = Router();
 
 router.post('/register', RegisterUser);

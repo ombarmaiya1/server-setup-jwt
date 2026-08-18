@@ -10,7 +10,7 @@ import cookieParser from "cookie-parser";
 //
 
 // ROUTES IMPORTS
-import authRoutes from "./src/auth/auth.routes.js";
+import authRoutes from "./src/features/auth/auth.routes.js";
 
 //********************************************************************************* */
 
@@ -32,6 +32,11 @@ await connectDB();
 // ROUTES
 app.use("/auth", authRoutes);
 
+
+app.get("/", (req, res) => {
+  res.json("Hello World ");
+});
+
 // DEFAULT ERROR HANDLER
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
@@ -40,9 +45,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({ message });
 });
 
-app.get("/", (req, res) => {
-  res.json("Hello World ");
-});
+
 
 app.listen(PORT, () => {
   console.log(`\nServer Started a Port : ${PORT}`);

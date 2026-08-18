@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config/config.js";
 
-export const IsAuthenticated = (req, res, next) => {
+export const VerifyUser = (req, res, next) => {
     try {
         const token = req.cookies.token;    
         if (!token) {

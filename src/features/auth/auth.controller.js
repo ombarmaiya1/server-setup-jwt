@@ -2,9 +2,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import User from "../user/user.model.js";
-import sendOTPEmail from "../services/email.service.js";
+import sendOTPEmail from "../../services/email.service.js";
 import OTP from "./otp.model.js";
-import { JWT_SECRET } from "../config/config.js";
+import { JWT_SECRET } from "../../config/config.js";
 
 const RegisterUser = async (req, res, next) => {
   try {
@@ -96,8 +96,8 @@ const SendOTP = async (req, res, next) => {
    }
 
     const newOTP = crypto.randomInt(100000, 999999).toString();
-
-    const existingOTP = await OTP.findOneAndUpdate(
+    
+    await OTP.findOneAndUpdate(
       { email },
       { otp: newOTP, expiresAt: new Date(Date.now() + 10 * 60 * 1000) },
       { upsert: true, new: true }
@@ -123,6 +123,11 @@ const VerifyOTP = async (req, res, next) => {
     const existingOTP = await OTP.findOne({ email });
     if (!existingOTP) {
       return res.status(400).json({ message: "OTP not found" });
+    }
+
+    if (Date.now() > existingOTP.expiresAt) {
+      await existingOTP.deleteOne();
+      return res.status(400).json({ message: "OTP expired" });
     }
 
     if (existingOTP.otp !== otp) {
