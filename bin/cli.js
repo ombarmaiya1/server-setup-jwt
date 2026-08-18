@@ -2,28 +2,40 @@
 
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Define source (where the template files are stored inside your package)
-const templateRoot = path.resolve(__dirname, "..");
+// ---------------------------------------------
+// PATHS
+// ---------------------------------------------
 
-// Target directory resolution:
-// 1. process.env.INIT_CWD -> Directory where user ran `npm install`
-// 2. process.cwd() -> Fallback for direct npx or local execution
-const baseUserDir = process.env.INIT_CWD || process.cwd();
+const packageRoot = path.resolve(__dirname, "..");
 
-// Get optional project name parameter, or default to "backend"
-const projectName = process.argv[2] || "server";
+const templateRoot = path.join(
+  packageRoot,
+  "templates"
+);
 
-// Resolve final path relative to the user's terminal location
-const targetDir = path.resolve(baseUserDir, projectName);
+const baseUserDir =
+  process.env.INIT_CWD || process.cwd();
+
+const projectName =
+  process.argv[2] || "server";
+
+const targetDir = path.resolve(
+  baseUserDir,
+  projectName
+);
+
+// ---------------------------------------------
+// EXCLUDED FILES / DIRECTORIES
+// ---------------------------------------------
 
 const excludedNames = new Set([
   "node_modules",
-  "bin",
   ".git",
   ".cache",
   ".turbo",
@@ -42,26 +54,69 @@ const excludedFiles = new Set([
   ".env.development.local",
   ".env.test.local",
   ".env.production.local",
-  "node_modules",
-  
 ]);
 
 function shouldExclude(name) {
-  return excludedNames.has(name) || excludedFiles.has(name);
+  return (
+    excludedNames.has(name) ||
+    excludedFiles.has(name)
+  );
 }
 
-function copyTemplate(source, destination) {
+// ---------------------------------------------
+// FILE HASH
+// ---------------------------------------------
+
+function getFileHash(filePath) {
+  return crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(filePath))
+    .digest("hex");
+}
+
+function filesAreSame(source, destination) {
+  if (!fs.existsSync(destination)) {
+    return false;
+  }
+
+  if (
+    !fs.statSync(source).isFile() ||
+    !fs.statSync(destination).isFile()
+  ) {
+    return false;
+  }
+
+  return (
+    getFileHash(source) ===
+    getFileHash(destination)
+  );
+}
+
+// ---------------------------------------------
+// COPY / SYNC
+// ---------------------------------------------
+
+function syncTemplate(source, destination) {
   const stats = fs.statSync(source);
 
+  // DIRECTORY
   if (stats.isDirectory()) {
-    fs.mkdirSync(destination, { recursive: true });
+    if (!fs.existsSync(destination)) {
+      fs.mkdirSync(destination, {
+        recursive: true,
+      });
+    }
 
-    for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
+    const entries = fs.readdirSync(source, {
+      withFileTypes: true,
+    });
+
+    for (const entry of entries) {
       if (shouldExclude(entry.name)) {
         continue;
       }
 
-      copyTemplate(
+      syncTemplate(
         path.join(source, entry.name),
         path.join(destination, entry.name)
       );
@@ -70,52 +125,69 @@ function copyTemplate(source, destination) {
     return;
   }
 
-  fs.copyFileSync(source, destination);
-}
+  // FILE
+  const relativePath = path.relative(
+    targetDir,
+    destination
+  );
 
-function ensureTargetDirectoryIsReady(directory) {
-  if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory, { recursive: true });
+  // Missing file
+  if (!fs.existsSync(destination)) {
+    fs.mkdirSync(path.dirname(destination), {
+      recursive: true,
+    });
+
+    fs.copyFileSync(source, destination);
+
+    console.log(`+ Added     ${relativePath}`);
     return;
   }
 
-  const existingFiles = fs.readdirSync(directory);
-
-  if (existingFiles.length > 0) {
-    console.error(`Error: "${path.basename(directory)}" already exists and is not empty.`);
-    console.error("Choose a different project name or remove the existing folder.");
-    process.exit(1);
+  // Same file
+  if (filesAreSame(source, destination)) {
+    console.log(`= Unchanged ${relativePath}`);
+    return;
   }
+
+  // Different file
+  fs.copyFileSync(source, destination);
+
+  console.log(`~ Updated   ${relativePath}`);
 }
 
+// ---------------------------------------------
+// VALIDATION
+// ---------------------------------------------
 
+if (!fs.existsSync(templateRoot)) {
+  console.error(
+    "Error: templates directory was not found."
+  );
 
-console.log(`Creating backend starter in ${targetDir}`);
-
-ensureTargetDirectoryIsReady(targetDir);
-copyTemplate(templateRoot, targetDir);
-
-console.log("");
-console.log("Backend starter created successfully.");
-console.log("");
-console.log("Next steps:");
-console.log(`  cd ${projectName}`);
-console.log("  npm install");
-console.log("  cp .env.example .env    # if you add an example env file");
-console.log("  npm run dev");
-console.log("");
-console.log("Configure your MongoDB URI, JWT secret, and email credentials before running in production.");
-
-console.log("\nCleaning up scaffolding package...");
-
-const projectRoot = baseUserDir;
-const packageName = "server-with-jwt";
-
-try {
-  const nodeModulePath = path.join(projectRoot, "node_modules", packageName);
-  if (fs.existsSync(nodeModulePath)) {
-    fs.rmSync(nodeModulePath, { recursive: true, force: true });
-  }
-} catch (error) {
-  console.error("Cleanup failed:", error.message);
+  process.exit(1);
 }
+
+// ---------------------------------------------
+// CREATE / SYNC
+// ---------------------------------------------
+
+console.log("");
+console.log(`Creating server: ${projectName}`);
+console.log("");
+
+if (!fs.existsSync(targetDir)) {
+  fs.mkdirSync(targetDir, {
+    recursive: true,
+  });
+}
+
+syncTemplate(
+  templateRoot,
+  targetDir
+);
+
+console.log("");
+console.log("Server created successfully.");
+console.log("");
+console.log("Copy Your Enviroment Variable in .env file")
+console.log("")
