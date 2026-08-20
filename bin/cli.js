@@ -49,7 +49,6 @@ const excludedNames = new Set([
 ]);
 
 const excludedFiles = new Set([
-  ".env",
   ".env.local",
   ".env.development.local",
   ".env.test.local",
